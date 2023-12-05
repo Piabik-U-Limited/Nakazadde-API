@@ -1,0 +1,74 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String          @id @unique() @default(uuid())
+  name           String
+  location       String?
+  email          EmailAddress?
+  occupation     String?
+  joinedAt       DateTime        @default(now())
+  dateOfBirth    DateTime?
+  phone          PhoneNumber?
+  password       Password?
+  medicalOfficer MedicalOfficer?
+}
+
+model EmailAddress {
+  id         String    @id @unique() @default(uuid())
+  user       User      @relation(fields: [userId], references: [id])
+  userId     String    @unique
+  email      String
+  isVerified Boolean   @default(false)
+  verifiedAt DateTime?
+}
+
+model PhoneNumber {
+  id         String    @id @unique() @default(uuid())
+  user       User      @relation(fields: [userId], references: [id])
+  userId     String    @unique
+  phone      String
+  isVerified Boolean   @default(false)
+  verifiedAt DateTime?
+}
+
+model Password {
+  id     String   @id @unique() @default(uuid())
+  user   User     @relation(fields: [userId], references: [id])
+  userId String   @unique
+  hash   String
+  salt   String
+  setAt  DateTime @default(now())
+}
+
+model MedicalOfficer {
+  id           String     @id @unique() @default(uuid())
+  speciality   Speciality
+  user         User       @relation(fields: [userId], references: [id])
+  userId       String     @unique
+  facilityName String?
+  role         Role
+}
+
+enum Speciality {
+  Doctor
+  Nurse
+  Surgeon
+  Dentist
+  MidWife
+}
+
+enum Role {
+  Student
+  Internee
+  Practitioner
+}
