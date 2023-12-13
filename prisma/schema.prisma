@@ -238,6 +238,10 @@ model Icon {
   id      String @id @default(uuid())
   forum   Forum  @relation(fields: [forumId], references: [id], onDelete: Cascade)
   forumId String @unique
+  url       String
+  publicId  String
+  setAt     DateTime  @default(now())
+  updatedAt DateTime?
 
   @@map("Icons")
 }
