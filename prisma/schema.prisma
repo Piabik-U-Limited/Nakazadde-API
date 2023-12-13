@@ -10,44 +10,92 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Authentication and Account set up
 model User {
-  id             String          @id @unique() @default(uuid())
-  name           String
-  location       String?
-  email          EmailAddress?
-  occupation     String?
-  joinedAt       DateTime        @default(now())
-  dateOfBirth    DateTime?
-  phone          PhoneNumber?
-  password       Password?
-  medicalOfficer MedicalOfficer?
+  id               String          @id @unique() @default(uuid())
+  name             String
+  location         String?
+  email            EmailAddress?
+  occupation       String?
+  joinedAt         DateTime        @default(now())
+  dateOfBirth      DateTime?
+  phone            PhoneNumber?
+  password         Password?
+  medicalOfficer   MedicalOfficer?
+  photo            ProfilePhoto?
+  otp              Otp[]
+  token            Token[]
+  notifications    Notifications[]
+  posts            Post[]
+  comments         PostComment[]
+  likes            PostLike[]
+  userOneChats     Chat[]          @relation("chatsAsOne")
+  userTwoChats     Chat[]          @relation("chatsAsTwo")
+  sentMessages     Message[]       @relation("UserSendingMessage")
+  receivedMessages Message[]       @relation("UserReceivingingMessage")
+  forums           Forum[]         @relation("createdBy")
+  membership       Member[]        @relation("memberOf")
+  followings       Follow[]        @relation("userIsFollowing")
+  followers        Follow[]        @relation("userIsFollowedBy")
 }
 
 model EmailAddress {
-  id         String    @id @unique() @default(uuid())
-  user       User      @relation(fields: [userId], references: [id])
-  userId     String    @unique
-  email      String
+  id         String    @id @default(uuid())
+  email      String    @unique
   isVerified Boolean   @default(false)
   verifiedAt DateTime?
+  user       User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String?   @unique
+
+  @@map("EmailAddresses")
 }
 
 model PhoneNumber {
-  id         String    @id @unique() @default(uuid())
-  user       User      @relation(fields: [userId], references: [id])
-  userId     String    @unique
-  phone      String
+  id         String    @id @default(uuid())
+  phone      String    @unique
   isVerified Boolean   @default(false)
   verifiedAt DateTime?
+  user       User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String?   @unique
+
+  @@map("PhoneNumbers")
 }
 
 model Password {
+  id        String    @id @default(uuid())
+  hash      String
+  salt      String
+  setAt     DateTime  @default(now())
+  updatedAt DateTime?
+  user      User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String?   @unique
+
+  @@map("Passwords")
+}
+
+model ProfilePhoto {
+  id        String    @id @unique() @default(uuid())
+  user      User      @relation(fields: [userId], references: [id])
+  userId    String    @unique
+  url       String
+  publicId  String
+  setAt     DateTime  @default(now())
+  updatedAt DateTime?
+}
+
+model Otp {
   id     String   @id @unique() @default(uuid())
+  code   String
   user   User     @relation(fields: [userId], references: [id])
-  userId String   @unique
-  hash   String
-  salt   String
+  userId String
   setAt  DateTime @default(now())
+}
+
+model Token {
+  id     String @id @unique() @default(uuid())
+  token  String
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
 }
 
 model MedicalOfficer {
@@ -71,4 +119,144 @@ enum Role {
   Student
   Internee
   Practitioner
+}
+
+model Notifications {
+  id      String   @id @default(uuid())
+  message String
+  isRead  Boolean  @default(false)
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId  String
+  time    DateTime @default(now())
+
+  @@map("Notifications")
+}
+
+model Post {
+  id        String        @id @default(uuid())
+  user      User          @relation(fields: [userId], references: [id])
+  userId    String
+  content   String?       @db.VarChar(500)
+  privacy   Privacy       @default(Public)
+  category  PostCategory  @default(Photo)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime?
+  likes     PostLike[]
+  assets    PostAsset[]
+  views     PostView[]
+  comments  PostComment[]
+
+  @@map("Posts")
+}
+
+enum PostCategory {
+  Photo
+  Event
+  Album
+  Video
+  Audio
+  File
+  Celebration
+}
+
+enum Privacy {
+  Public
+  Private
+}
+
+model PostLike {
+  id     String  @id @default(uuid())
+  Post   Post?   @relation(fields: [postId], references: [id])
+  postId String?
+  user   User    @relation(fields: [userId], references: [id])
+  userId String
+
+  @@map("PostLikes")
+}
+
+model PostComment {
+  id      String  @id @default(uuid())
+  Post    Post?   @relation(fields: [postId], references: [id])
+  postId  String?
+  user    User    @relation(fields: [userId], references: [id])
+  userId  String
+  messege String
+
+  @@map("PostComments")
+}
+
+model PostAsset {
+  id        String  @id @default(uuid())
+  Post      Post    @relation(fields: [postId], references: [id])
+  postId    String
+  url       String
+  mediaType String?
+  publicId  String?
+}
+
+model PostView {
+  id     String  @id @default(uuid())
+  Post   Post?   @relation(fields: [postId], references: [id])
+  postId String?
+}
+
+model Chat {
+  id        String @id @default(uuid())
+  userOne   User   @relation("chatsAsOne", fields: [userOneId], references: [id], onDelete: Cascade)
+  userOneId String
+  userTwo   User   @relation("chatsAsTwo", fields: [userTwoId], references: [id], onDelete: Cascade)
+  userTwoId String
+
+  messages Message[]
+}
+
+model Message {
+  id         String @id @default(uuid())
+  Chat       Chat?  @relation(fields: [chatId], references: [id])
+  chatId     String
+  sender     User?  @relation("UserSendingMessage", fields: [senderId], references: [id])
+  senderId   String
+  receiver   User?  @relation("UserReceivingingMessage", fields: [receiverId], references: [id])
+  receiverId String
+  message    String @db.VarChar(1000)
+}
+
+model Forum {
+  id          String   @id @default(uuid())
+  name        String
+  createdAt   DateTime @default(now())
+  creator     User     @relation("createdBy", fields: [creatorId], references: [id])
+  creatorId   String
+  members     Member[] @relation("memberToForum")
+  description String   @db.VarChar(500)
+  icon        Icon?    @relation()
+
+  @@map("Forums")
+}
+
+model Icon {
+  id      String @id @default(uuid())
+  forum   Forum  @relation(fields: [forumId], references: [id], onDelete: Cascade)
+  forumId String @unique
+
+  @@map("Icons")
+}
+
+model Member {
+  id       String   @id @default(uuid())
+  forum    Forum    @relation("memberToForum", fields: [forumId], references: [id], onDelete: Cascade)
+  forumId  String
+  user     User     @relation("memberOf", fields: [userId], references: [id], onDelete: Cascade)
+  userId   String
+  joinedAt DateTime @default(now())
+
+  @@map("Members")
+}
+
+model Follow {
+  id         String @id @default(uuid())
+  follower   User   @relation("userIsFollowedBy", fields: [followerId], references: [id], onDelete: Cascade)
+  followerId String
+  followee   User   @relation("userIsFollowing", fields: [followeeId], references: [id], onDelete: Cascade)
+  followeeId String
 }
