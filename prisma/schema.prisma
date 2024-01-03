@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
@@ -15,10 +15,12 @@ model User {
   id               String          @id @unique() @default(uuid())
   name             String
   location         String?
+  gender           Gender?
   email            EmailAddress?
   occupation       String?
   joinedAt         DateTime        @default(now())
   dateOfBirth      DateTime?
+  about            String?
   phone            PhoneNumber?
   password         Password?
   medicalOfficer   MedicalOfficer?
@@ -37,6 +39,11 @@ model User {
   membership       Member[]        @relation("memberOf")
   followings       Follow[]        @relation("userIsFollowing")
   followers        Follow[]        @relation("userIsFollowedBy")
+}
+
+enum Gender {
+  Male
+  Female
 }
 
 model EmailAddress {
@@ -235,9 +242,9 @@ model Forum {
 }
 
 model Icon {
-  id      String @id @default(uuid())
-  forum   Forum  @relation(fields: [forumId], references: [id], onDelete: Cascade)
-  forumId String @unique
+  id        String    @id @default(uuid())
+  forum     Forum     @relation(fields: [forumId], references: [id], onDelete: Cascade)
+  forumId   String    @unique
   url       String
   publicId  String
   setAt     DateTime  @default(now())
