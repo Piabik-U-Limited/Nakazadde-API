@@ -1,4 +1,4 @@
-import { User,Gender } from '@prisma/client';
+import { User, Gender } from '@prisma/client';
 import {
   IsEmail,
   IsNotEmpty,
@@ -25,13 +25,9 @@ export class CreateUserDto {
   @IsString()
   password: string;
 
-  @IsString()
-  @IsOptional()
-  title: string;
-
   @IsPhoneNumber()
-  @IsNotEmpty()
-  phoneNumber: string;
+  @IsNotEmpty({ message: 'Phone number is required' })
+  phone: string;
 
   @IsString()
   @IsOptional()
@@ -44,6 +40,10 @@ export class CreateUserDto {
   @IsString()
   @IsOptional()
   householdId: string;
+
+  @IsString()
+  @IsOptional()
+  occupation: string;
 
   @IsString()
   @IsOptional()

@@ -82,7 +82,7 @@ model Password {
 
 model ProfilePhoto {
   id        String    @id @unique() @default(uuid())
-  user      User      @relation(fields: [userId], references: [id])
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String    @unique
   url       String
   publicId  String
@@ -93,7 +93,7 @@ model ProfilePhoto {
 model Otp {
   id     String   @id @unique() @default(uuid())
   code   String
-  user   User     @relation(fields: [userId], references: [id])
+  user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String
   setAt  DateTime @default(now())
 }
@@ -101,14 +101,14 @@ model Otp {
 model Token {
   id     String @id @unique() @default(uuid())
   token  String
-  user   User   @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String
 }
 
 model MedicalOfficer {
   id           String     @id @unique() @default(uuid())
   speciality   Speciality
-  user         User       @relation(fields: [userId], references: [id])
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId       String     @unique
   facilityName String?
   role         Role
@@ -141,7 +141,7 @@ model Notifications {
 
 model Post {
   id        String        @id @default(uuid())
-  user      User          @relation(fields: [userId], references: [id])
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
   content   String?       @db.VarChar(500)
   privacy   Privacy       @default(Public)
@@ -173,9 +173,9 @@ enum Privacy {
 
 model PostLike {
   id     String  @id @default(uuid())
-  Post   Post?   @relation(fields: [postId], references: [id])
+  post   Post?   @relation(fields: [postId], references: [id], onDelete: Cascade)
   postId String?
-  user   User    @relation(fields: [userId], references: [id])
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String
 
   @@map("PostLikes")
@@ -183,9 +183,9 @@ model PostLike {
 
 model PostComment {
   id      String  @id @default(uuid())
-  Post    Post?   @relation(fields: [postId], references: [id])
+  post    Post?   @relation(fields: [postId], references: [id], onDelete: Cascade)
   postId  String?
-  user    User    @relation(fields: [userId], references: [id])
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId  String
   messege String
 
@@ -194,7 +194,7 @@ model PostComment {
 
 model PostAsset {
   id        String  @id @default(uuid())
-  Post      Post    @relation(fields: [postId], references: [id])
+  post      Post    @relation(fields: [postId], references: [id], onDelete: Cascade)
   postId    String
   url       String
   mediaType String?
@@ -219,11 +219,11 @@ model Chat {
 
 model Message {
   id         String @id @default(uuid())
-  Chat       Chat?  @relation(fields: [chatId], references: [id])
+  Chat       Chat?  @relation(fields: [chatId], references: [id], onDelete: Cascade)
   chatId     String
-  sender     User?  @relation("UserSendingMessage", fields: [senderId], references: [id])
+  sender     User?  @relation("UserSendingMessage", fields: [senderId], references: [id], onDelete: Cascade)
   senderId   String
-  receiver   User?  @relation("UserReceivingingMessage", fields: [receiverId], references: [id])
+  receiver   User?  @relation("UserReceivingingMessage", fields: [receiverId], references: [id], onDelete: Cascade)
   receiverId String
   message    String @db.VarChar(1000)
 }
