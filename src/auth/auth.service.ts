@@ -10,7 +10,8 @@ import { PrismaClient } from '@prisma/client';
 import { ConfigService } from '@nestjs/config';
 import { CreateUserDto } from './dto/createUser.dto';
 import { MailService } from '../mail/mail.service';
-import { LoginDto } from './dto/loginDto.dto';
+import { LoginDto, PasswordDto } from './dto/loginDto.dto';
+import { OtpService } from '../otp/otp.service';
 
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
@@ -22,6 +23,7 @@ export class AuthService {
     private prisma: PrismaClient,
     private config: ConfigService,
     private mailService: MailService,
+    private otpService: OtpService,
   ) {}
 
   async registerUser(dto: CreateUserDto) {
@@ -53,14 +55,11 @@ export class AuthService {
       },
     });
     const verificationToken = crypto.randomBytes(20).toString('hex');
-    await this.prisma.token.create({
-      data: {
-        user: {
-          connect: { id: user.id },
-        },
-        token: verificationToken,
-      },
-    });
+    const otp = this.otpService.generateOtp();
+    await this.storeOtp(user.id, otp);
+    await this.storeToken(user.id, verificationToken)
+
+   
     //TO BE ADDED AS ENV VARIABLE
     const verificationURL = `${this.config.get(
       'BASE_URL',
@@ -72,6 +71,7 @@ export class AuthService {
       {
         name: user.name,
         url: verificationURL,
+        otp: otp,
       },
 
       './verify-email.hbs',
@@ -91,6 +91,19 @@ export class AuthService {
     return await bcrypt.hash(password, salt); // Hash the password with the salt
   }
 
+  private async storeOtp(userId: string,code: string, ) {
+   return await this.prisma.otp.create({
+      data: {code,userId },
+    });
+  }
+   private async storeToken(userId: string,token: string, ) {
+   return await this.prisma.token.create({
+      data: {
+        user: {connect: { id: userId },},token,
+      },
+    });
+  }
+   
   //Login
   async loginUser(dto: LoginDto) {
     const email = await this.prisma.emailAddress.findUnique({
@@ -131,6 +144,53 @@ export class AuthService {
       tokens: await this.jwtTokenService.signTokens(
         user.id,
         dto.email,
+        dto.password,
+      ),
+    };
+  }
+
+  //reset password
+
+  async resetPassword(dto: PasswordDto, token: string) {
+    const validToken = await this.prisma.token.findFirst({ where: { token } });
+    if (!validToken) {
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          message: 'Invalid token or token expired',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: validToken.userId },
+      include: { email: {select: { email: true }}, password: {select: { hash: true, salt: true }} },
+    });
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await this.createHash(dto.password, salt);
+    const updatePassword = await this.prisma.password.update({
+      where: {
+        userId: validToken.userId,
+      },
+      data: {
+        hash: hashedPassword,
+        salt: salt,
+      },
+    });
+    await this.prisma.token.delete({
+      where: {
+         id: validToken.id,
+      },
+    });
+    return {
+      status: HttpStatus.ACCEPTED,
+      message: 'Password reset successful',
+      user,
+
+      tokens: await this.jwtTokenService.signTokens(
+        user.id,
+        user.email.email,
         dto.password,
       ),
     };
