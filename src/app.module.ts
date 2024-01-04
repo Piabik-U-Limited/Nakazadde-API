@@ -5,9 +5,14 @@ import { UsersModule } from './users/users.module';
 import { ForumsModule } from './forums/forums.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 
-
 @Module({
-  imports: [AuthModule, MailModule, UsersModule, ForumsModule, CloudinaryModule],
+  imports: [
+    AuthModule,
+    MailModule,
+    UsersModule,
+    ForumsModule,
+    CloudinaryModule,
+  ],
   controllers: [],
   providers: [],
 })

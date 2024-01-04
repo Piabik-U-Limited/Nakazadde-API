@@ -5,9 +5,8 @@ export class CreateForumDto {
   name: string;
 
   @IsString()
-  @IsNotEmpty({ message: 'Provide creator\'s Id' })
-  
-  creatorId: string;
+  @IsNotEmpty({ message: "Provide creator's Id" })
+  userId: string;
 
   @IsString()
   @IsOptional()

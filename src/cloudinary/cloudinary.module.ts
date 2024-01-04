@@ -3,6 +3,6 @@ import { CloudinaryService } from './cloudinary.service';
 import { ConfigService } from '@nestjs/config';
 
 @Module({
-  providers: [CloudinaryService,ConfigService]
+  providers: [CloudinaryService, ConfigService],
 })
 export class CloudinaryModule {}

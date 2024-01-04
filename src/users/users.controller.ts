@@ -9,7 +9,7 @@ import {
   Body,
   Query,
   UseGuards,
-   UploadedFile,
+  UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
@@ -47,7 +47,8 @@ export class UsersController {
     return this.usersService.getUserById(id);
   }
   @Put(':id')
-    @ApiBody({
+  @ApiOperation({ summary: 'Update user by id' })
+  @ApiBody({
     schema: {
       type: 'object',
       properties: {
@@ -62,7 +63,7 @@ export class UsersController {
           example: 'Male',
           description: 'User gender',
         },
-       
+
         dateOfBirth: {
           type: 'date',
           example: new Date(),
@@ -90,6 +91,7 @@ export class UsersController {
     status: 200,
     description: 'Update user by id',
   })
+  @UseGuards(UserGuard)
   async editUser(@Param('id') id: string, @Body() dto: EditUserDto) {
     return this.usersService.editUser(id, dto);
   }
@@ -110,7 +112,7 @@ export class UsersController {
           example: 'Male',
           description: 'User gender',
         },
-       
+
         dateOfBirth: {
           type: 'date',
           example: new Date(),
@@ -155,7 +157,7 @@ export class UsersController {
     return this.usersService.deleteUser(id);
   }
 
-   // upload profile image
+  // upload profile image
   @Post(':id/photo')
   @UseInterceptors(FileInterceptor('file'))
   @ApiConsumes('multipart/form-data')
@@ -173,5 +175,19 @@ export class UsersController {
   @UseGuards(UserGuard)
   async uploadFile(@UploadedFile() file: any, @Param('id') id: string) {
     return await this.usersService.uploadProfileImage(file, id);
+  }
+
+  //get user's forums
+  @Get(':id/forums')
+  @ApiOperation({
+    summary: 'Get user forums',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Get user forums',
+  })
+  @UseGuards(UserGuard)
+  async getUserForums(@Param('id') id: string) {
+    return await this.usersService.getUserForums(id);
   }
 }

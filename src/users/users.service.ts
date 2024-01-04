@@ -5,10 +5,10 @@ import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaClient,
-    private cloudinary: CloudinaryService
-
-  ) { }
+  constructor(
+    private prisma: PrismaClient,
+    private cloudinary: CloudinaryService,
+  ) {}
 
   async editUser(id: string, dto: EditUserDto) {
     const user = await this.prisma.user.update({
@@ -71,14 +71,19 @@ export class UsersService {
     return { message: 'User deleted successfully', user: deletedUser };
   }
 
-
+  async getUserForums(id: string) {
+    return await this.prisma.member.findMany({
+      where: { AND: { userId: id, status: 'Active' } },
+      select: { forum: true, admin: true },
+    });
+  }
   async uploadProfileImage(file: any, id: string) {
     //check if user already has image and delete it
     const current = await this.prisma.profilePhoto.findFirst({
       where: { userId: id },
     });
     if (current) {
-      await this.deteleteProfileImage(current.id, current.publicId);
+      await this.deletePhoto(current.id, current.publicId);
     }
     const image = await this.cloudinary.uploadFile(file, 'users');
     // const profileImage =
@@ -95,7 +100,7 @@ export class UsersService {
     };
   }
 
-  private async deteleteProfileImage(id: string, publicId: string) {
+  private async deletePhoto(id: string, publicId: string) {
     //delete current profile image
     await this.prisma.profilePhoto.delete({ where: { id } });
     await this.cloudinary.deleteFile(publicId, 'users');

@@ -90,7 +90,7 @@ CREATE TABLE `Token` (
 -- CreateTable
 CREATE TABLE `MedicalOfficer` (
     `id` VARCHAR(191) NOT NULL,
-    `speciality` ENUM('Doctor', 'Nurse', 'Surgeon', 'Dentist', 'MidWife') NOT NULL,
+    `speciality` ENUM('Doctor', 'Nurse', 'Surgeon', 'Dentist', 'MidWife', 'Pharmacist', 'Optician', 'Physiotherapist', 'Psychologis', 'Psychiatris', 'OccupationalTherapis', 'Radiologis', 'Anesthesiologis', 'Dietitian', 'Optometrist', 'Chiropractor', 'Podiatrist', 'Paramedic') NOT NULL,
     `userId` VARCHAR(191) NOT NULL,
     `facilityName` VARCHAR(191) NULL,
     `role` ENUM('Student', 'Internee', 'Practitioner') NOT NULL,
@@ -212,7 +212,18 @@ CREATE TABLE `Members` (
     `forumId` VARCHAR(191) NOT NULL,
     `userId` VARCHAR(191) NOT NULL,
     `joinedAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `status` ENUM('Pending', 'Active', 'Suspended', 'Removed') NOT NULL DEFAULT 'Pending',
 
+    UNIQUE INDEX `Members_userId_forumId_key`(`userId`, `forumId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `ForumAdmin` (
+    `id` VARCHAR(191) NOT NULL,
+    `memberId` VARCHAR(191) NOT NULL,
+
+    UNIQUE INDEX `ForumAdmin_memberId_key`(`memberId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -277,13 +288,13 @@ ALTER TABLE `Chat` ADD CONSTRAINT `Chat_userOneId_fkey` FOREIGN KEY (`userOneId`
 ALTER TABLE `Chat` ADD CONSTRAINT `Chat_userTwoId_fkey` FOREIGN KEY (`userTwoId`) REFERENCES `User`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `Message` ADD CONSTRAINT `Message_chatId_fkey` FOREIGN KEY (`chatId`) REFERENCES `Chat`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `Message` ADD CONSTRAINT `Message_chatId_fkey` FOREIGN KEY (`chatId`) REFERENCES `Chat`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `Message` ADD CONSTRAINT `Message_senderId_fkey` FOREIGN KEY (`senderId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `Message` ADD CONSTRAINT `Message_senderId_fkey` FOREIGN KEY (`senderId`) REFERENCES `User`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `Message` ADD CONSTRAINT `Message_receiverId_fkey` FOREIGN KEY (`receiverId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `Message` ADD CONSTRAINT `Message_receiverId_fkey` FOREIGN KEY (`receiverId`) REFERENCES `User`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `Forums` ADD CONSTRAINT `Forums_creatorId_fkey` FOREIGN KEY (`creatorId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -296,6 +307,9 @@ ALTER TABLE `Members` ADD CONSTRAINT `Members_forumId_fkey` FOREIGN KEY (`forumI
 
 -- AddForeignKey
 ALTER TABLE `Members` ADD CONSTRAINT `Members_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `ForumAdmin` ADD CONSTRAINT `ForumAdmin_memberId_fkey` FOREIGN KEY (`memberId`) REFERENCES `Members`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `Follow` ADD CONSTRAINT `Follow_followerId_fkey` FOREIGN KEY (`followerId`) REFERENCES `User`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;

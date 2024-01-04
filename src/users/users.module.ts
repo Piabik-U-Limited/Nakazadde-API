@@ -6,7 +6,7 @@ import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { ConfigService } from '@nestjs/config';
 
 @Module({
-  providers: [UsersService, PrismaClient, CloudinaryService,ConfigService],
+  providers: [UsersService, PrismaClient, CloudinaryService, ConfigService],
   controllers: [UsersController],
 })
 export class UsersModule {}
