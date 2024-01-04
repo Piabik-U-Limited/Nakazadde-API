@@ -6,10 +6,10 @@ import { ApiTags, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { EmailGuard } from './guards/email.guard';
 import { PhoneGuard } from './guards/phone.guard';
 @Controller('auth')
+@ApiTags('Auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
-  @ApiTags('Auth')
   @Post('register')
   @ApiBody({
     schema: {
@@ -51,11 +51,11 @@ export class AuthController {
           example: 'This is my about',
           description: 'User bio',
         },
-occupation: {
-  type: 'string',
-  example: 'Doctor',
-  description: 'User occupation',
-},
+        occupation: {
+          type: 'string',
+          example: 'Doctor',
+          description: 'User occupation',
+        },
         location: {
           type: 'string',
           example: 'Kampala,UG',

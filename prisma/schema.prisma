@@ -120,6 +120,19 @@ enum Speciality {
   Surgeon
   Dentist
   MidWife
+  Pharmacist
+  Optician
+  Physiotherapist
+  Psychologis
+  Psychiatris
+  OccupationalTherapis
+  Radiologis
+  Anesthesiologis
+  Dietitian
+  Optometrist
+  Chiropractor
+  Podiatrist
+  Paramedic
 }
 
 enum Role {
@@ -254,14 +267,29 @@ model Icon {
 }
 
 model Member {
-  id       String   @id @default(uuid())
-  forum    Forum    @relation("memberToForum", fields: [forumId], references: [id], onDelete: Cascade)
-  forumId  String
-  user     User     @relation("memberOf", fields: [userId], references: [id], onDelete: Cascade)
-  userId   String
-  joinedAt DateTime @default(now())
+  id         String           @id @default(uuid())
+  forum      Forum            @relation("memberToForum", fields: [forumId], references: [id], onDelete: Cascade)
+  forumId    String
+  user       User             @relation("memberOf", fields: [userId], references: [id], onDelete: Cascade)
+  userId     String
+  joinedAt   DateTime         @default(now())
+  status     MembershipStatus @default(Pending)
+  ForumAdmin ForumAdmin[]
 
   @@map("Members")
+}
+
+model ForumAdmin {
+  id       String @id @default(uuid())
+  member   Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  memberId String
+}
+
+enum MembershipStatus {
+  Pending
+  Active
+  Suspended
+  Removed
 }
 
 model Follow {

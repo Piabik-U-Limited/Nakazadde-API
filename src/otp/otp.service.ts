@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as speakeasy from 'speakeasy'
+import * as speakeasy from 'speakeasy';
 
 @Injectable()
 export class OtpService {

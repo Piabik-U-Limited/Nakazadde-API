@@ -16,7 +16,7 @@ import { OtpService } from '../otp/otp.service';
     ConfigService,
     PrismaClient,
     MailService,
-    OtpService
+    OtpService,
   ],
   controllers: [AuthController],
 })

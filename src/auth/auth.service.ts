@@ -57,9 +57,8 @@ export class AuthService {
     const verificationToken = crypto.randomBytes(20).toString('hex');
     const otp = this.otpService.generateOtp();
     await this.storeOtp(user.id, otp);
-    await this.storeToken(user.id, verificationToken)
+    await this.storeToken(user.id, verificationToken);
 
-   
     //TO BE ADDED AS ENV VARIABLE
     const verificationURL = `${this.config.get(
       'BASE_URL',
@@ -67,14 +66,14 @@ export class AuthService {
 
     await this.mailService.sendMail(
       user.email.email,
-      'Verify Email',
+      'Email Verification OTP',
       {
         name: user.name,
         url: verificationURL,
         otp: otp,
       },
 
-      './verify-email.hbs',
+      './registration.hbs',
     );
     return {
       message: 'Account created successfully',
@@ -91,19 +90,20 @@ export class AuthService {
     return await bcrypt.hash(password, salt); // Hash the password with the salt
   }
 
-  private async storeOtp(userId: string,code: string, ) {
-   return await this.prisma.otp.create({
-      data: {code,userId },
+  private async storeOtp(userId: string, code: string) {
+    return await this.prisma.otp.create({
+      data: { code, userId },
     });
   }
-   private async storeToken(userId: string,token: string, ) {
-   return await this.prisma.token.create({
+  private async storeToken(userId: string, token: string) {
+    return await this.prisma.token.create({
       data: {
-        user: {connect: { id: userId },},token,
+        user: { connect: { id: userId } },
+        token,
       },
     });
   }
-   
+
   //Login
   async loginUser(dto: LoginDto) {
     const email = await this.prisma.emailAddress.findUnique({
@@ -120,9 +120,7 @@ export class AuthService {
       include: {
         email: { select: { email: true, isVerified: true } },
         phone: { select: { phone: true, isVerified: true } },
-         
-      
-      }
+      },
     });
     if (!user) throw new NotFoundException('Invalid Credentials');
     const password = await this.prisma.password.findUnique({
@@ -165,7 +163,10 @@ export class AuthService {
 
     const user = await this.prisma.user.findUnique({
       where: { id: validToken.userId },
-      include: { email: {select: { email: true }}, password: {select: { hash: true, salt: true }} },
+      include: {
+        email: { select: { email: true } },
+        password: { select: { hash: true, salt: true } },
+      },
     });
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await this.createHash(dto.password, salt);
@@ -180,7 +181,7 @@ export class AuthService {
     });
     await this.prisma.token.delete({
       where: {
-         id: validToken.id,
+        id: validToken.id,
       },
     });
     return {
